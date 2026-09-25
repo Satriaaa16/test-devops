@@ -1,0 +1,5 @@
+bin/
+*.exe
+*.test
+*note.txt
+.DS_Store
