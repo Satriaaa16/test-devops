@@ -13,22 +13,22 @@ node {
         }
 
         stage('Test') {
-            echo 'Running unit tests inside Docker Go container...'
-            // Menjalankan test menggunakan image container Go secara ephemeral
+            echo 'Running unit tests...'
+            // Menggunakan container Go ephemeral agar tidak perlu install Go di host Jenkins
             sh 'docker run --rm -v $(pwd):/app -w /app golang:1.23-alpine go test -v ./...'
         }
 
-        stage('Build Binary & Image') {
+        stage('Build Binary') {
             echo "Building app version: ${GIT_COMMIT_SHORT}"
-            // Compile binary statis menggunakan container Go
             sh "docker run --rm -v \$(pwd):/app -w /app golang:1.23-alpine sh -c \"CGO_ENABLED=0 GOOS=linux go build -ldflags=\\\"-X 'main.version=${GIT_COMMIT_SHORT}'\\\" -o ./bin/app main.go\""
-            
-            // Build Docker image aplikasi
             sh "docker build --build-arg VERSION=${GIT_COMMIT_SHORT} -t ${APP_NAME}:${GIT_COMMIT_SHORT} ."
         }
 
         stage('Push Image (Simulated)') {
-            echo "Simulating push image ${APP_NAME}:${GIT_COMMIT_SHORT} using credentials ID: ${REGISTRY_CRED_ID}"
+            // Memanggil secret dari Credentials Manager Jenkins yang baru kamu buat
+            withCredentials([usernamePassword(credentialsId: REGISTRY_CRED_ID, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
+                echo "Simulating image push using credentials for user: ${REG_USER}"
+            }
         }
 
         stage('Deploy (Hotfix / Swap Binary)') {
@@ -40,7 +40,7 @@ node {
                 if [ -f ./bin/app_running ]; then cp ./bin/app_running ./bin/app.bak; fi
             '''
 
-            // Pemicu restart / jalankan container dengan volume mount
+            // Pemicu restart / jalankan container
             sh """
                 if [ \$(docker ps -q -f name=${APP_NAME}) ]; then
                     docker restart ${APP_NAME}
@@ -51,7 +51,7 @@ node {
                 cp ./bin/app ./bin/app_running
             """
 
-            // Health check sederhana
+            // Health check
             sh '''
                 sleep 2
                 curl -f http://localhost:8080 || exit 1
@@ -65,13 +65,10 @@ node {
                 cp ./bin/app.bak ./bin/app
                 docker restart devops-go-app || true
                 echo "Rollback sukses dilakukan."
-            else
-                echo "Tidak ditemukan backup binary untuk melakukan rollback."
             fi
         '''
         throw exc
     } finally {
-        // Menggunakan deleteDir() pengganti cleanWs() yang bawaan Jenkins
         deleteDir()
     }
 }
