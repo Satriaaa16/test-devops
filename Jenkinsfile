@@ -3,7 +3,7 @@ node {
     def GIT_COMMIT_SHORT = ''
     def REGISTRY_CRED_ID = 'docker-hub-credentials'
 
-    // Memanggil Go tool yang baru saja kamu daftarkan di Manage Jenkins -> Tools
+    // Panggil Go tool yang baru kamu daftarkan di UI Jenkins
     def goHome = tool name: 'go-1.23', type: 'golang'
     env.PATH = "${goHome}/bin:${env.PATH}"
 
