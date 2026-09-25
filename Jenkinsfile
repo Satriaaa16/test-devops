@@ -13,16 +13,17 @@ node {
         }
 
         stage('Test') {
-            echo 'Running unit tests...'
-            // Menjalankan semua unit test sesuai standar Go dan requirement soal
-            sh 'go test -v ./...'
+            echo 'Running unit tests inside Docker Go container...'
+            // Menjalankan test menggunakan image container Go secara ephemeral
+            sh 'docker run --rm -v $(pwd):/app -w /app golang:1.23-alpine go test -v ./...'
         }
 
         stage('Build Binary & Image') {
             echo "Building app version: ${GIT_COMMIT_SHORT}"
-            // Build binary lokal dengan inject versi commit hash
-            sh "CGO_ENABLED=0 GOOS=linux go build -ldflags=\"-X 'main.version=${GIT_COMMIT_SHORT}'\" -o ./bin/app main.go"
-            // Build Docker image
+            // Compile binary statis menggunakan container Go
+            sh "docker run --rm -v \$(pwd):/app -w /app golang:1.23-alpine sh -c \"CGO_ENABLED=0 GOOS=linux go build -ldflags=\\\"-X 'main.version=${GIT_COMMIT_SHORT}'\\\" -o ./bin/app main.go\""
+            
+            // Build Docker image aplikasi
             sh "docker build --build-arg VERSION=${GIT_COMMIT_SHORT} -t ${APP_NAME}:${GIT_COMMIT_SHORT} ."
         }
 
@@ -39,7 +40,7 @@ node {
                 if [ -f ./bin/app_running ]; then cp ./bin/app_running ./bin/app.bak; fi
             '''
 
-            // Jalankan / restart container dengan volume mount
+            // Pemicu restart / jalankan container dengan volume mount
             sh """
                 if [ \$(docker ps -q -f name=${APP_NAME}) ]; then
                     docker restart ${APP_NAME}
@@ -50,7 +51,7 @@ node {
                 cp ./bin/app ./bin/app_running
             """
 
-            // Health check untuk verifikasi
+            // Health check sederhana
             sh '''
                 sleep 2
                 curl -f http://localhost:8080 || exit 1
@@ -70,6 +71,7 @@ node {
         '''
         throw exc
     } finally {
-        cleanWs()
+        // Menggunakan deleteDir() pengganti cleanWs() yang bawaan Jenkins
+        deleteDir()
     }
 }
