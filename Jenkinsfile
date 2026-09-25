@@ -36,10 +36,12 @@ node {
         }
 
         stage('Push Image (Simulated)') {
+           echo "Simulating push image using credentials binding..."
             withCredentials([usernamePassword(credentialsId: REGISTRY_CRED_ID, usernameVariable: 'REG_USER', passwordVariable: 'REG_PASS')]) {
-                echo "Simulating push image ${APP_NAME}:${GIT_COMMIT_SHORT} using credentials for user: ${REG_USER}"
+                // Cukup eksekusi perintah tanpa print/echo nama variabel ke log
+                sh 'echo "Simulating docker login and push..."'
             }
-        }
+         }
 
         stage('Deploy (Hotfix / Swap Binary)') {
             echo 'Deploying via binary swap strategy...'
