@@ -3,10 +3,6 @@ node {
     def GIT_COMMIT_SHORT = ''
     def REGISTRY_CRED_ID = 'docker-hub-credentials'
 
-    // Panggil Go tool yang baru kamu daftarkan di UI Jenkins
-    def goHome = tool name: 'go-1.23', type: 'golang'
-    env.PATH = "${goHome}/bin:${env.PATH}"
-
     try {
         stage('Checkout') {
             checkout scm
@@ -14,6 +10,19 @@ node {
                 script: "git rev-parse --short HEAD",
                 returnStdout: true
             ).trim()
+        }
+
+        stage('Setup Go Environment') {
+            echo 'Downloading Go 1.23.0 directly in pipeline workspace...'
+            sh '''
+                if [ ! -d "go_dist/go" ]; then
+                    mkdir -p go_dist
+                    curl -sSL https://go.dev/dl/go1.23.0.linux-amd64.tar.gz | tar -xz -C go_dist
+                fi
+            '''
+            // Menambahkan binary Go yang diunduh ke PATH Jenkins secara lokal
+            env.PATH = "${workspace}/go_dist/go/bin:${env.PATH}"
+            sh 'go version'
         }
 
         stage('Test') {
