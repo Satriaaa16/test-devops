@@ -19,7 +19,7 @@ Runtime Stage: Uses a minimal alpine:latest base to reduce attack surface while 
 
 Final Image Optimization: By separating build-time dependencies from the runtime image, the resulting image size remains under ~15 MB.
 
-Deployment & Hotfix Strategy (Part II)
+### 2. Deployment & Hotfix Strategy (Part II)
 Volume-Mounted Binary Swap
 To achieve rapid deployment and hotfix capabilities without triggering a full docker build cycle or image layer churn, the container mounts the compiled binary directly from the host filesystem:
 
@@ -37,7 +37,7 @@ Resource Efficiency: Avoids saturating network bandwidth and CPU on CI/CD agents
 
 Trade-off Consideration: While immutable infrastructure (full image replacement) is preferred for standard release cycles, binary swapping is an acceptable and effective trade-off for zero-rebuild hotfix scenarios.
 
-CI/CD Pipeline Architecture (Part III)
+### 3. CI/CD Pipeline Architecture (Part III)
 The deployment is orchestrated via a self-contained Jenkins Scripted Pipeline (Jenkinsfile) designed to run seamlessly even in constrained agent environments without pre-installed Go toolchains.
 
 Key Pipeline Stages
