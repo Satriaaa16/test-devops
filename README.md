@@ -78,3 +78,14 @@ docker run -d --name devops-go-app --restart always -p 8080:8080 -v $(pwd)/bin/a
 
 # 4. Verify endpoint response
 curl http://localhost:8080
+
+<img width="1915" height="987" alt="image" src="https://github.com/user-attachments/assets/02b520e4-b3f3-481b-be89-d988ddffda12" />
+
+
+# 5. Evidence & Successful Pipeline Logs
+<img width="1571" height="924" alt="image" src="https://github.com/user-attachments/assets/90f55bd4-796f-4c75-8276-710a96eedcb9" />
+<img width="1907" height="926" alt="image" src="https://github.com/user-attachments/assets/9419229f-ca16-4e78-95d2-eef005147ff8" />
+
+
+
+
