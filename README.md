@@ -23,13 +23,14 @@ Final Image Optimization: By separating build-time dependencies from the runtime
 Volume-Mounted Binary Swap
 To achieve rapid deployment and hotfix capabilities without triggering a full docker build cycle or image layer churn, the container mounts the compiled binary directly from the host filesystem:
 
-Bash
+```Bash
 docker run -d \
   --name devops-go-app \
   --restart always \
   -p 8080:8080 \
   -v $(pwd)/bin/app:/app/app \
   devops-go-app:latest
+```
 Why This Approach Fits Production Hotfixes
 Downtime Minimization: Traditional image rebuilds and registry pushes take minutes. Swapping the binary and issuing a docker restart reduces service interruption to less than 2 seconds (process restart time).
 
@@ -65,7 +66,7 @@ This guarantees that the service rolls back to the last known healthy state befo
 Verification & Execution
 To test the entire workflow locally:
 
-Bash
+```Bash
 # 1. Run unit tests
 go test -v .
 
@@ -76,6 +77,7 @@ CGO_ENABLED=0 GOOS=linux go build -ldflags="-X 'main.version=1.0.0'" -o ./bin/ap
 docker build --build-arg VERSION=1.0.0 -t devops-go-app:latest .
 docker run -d --name devops-go-app --restart always -p 8080:8080 -v $(pwd)/bin/app:/app/app devops-go-app:latest
 
+```
 # 4. Verify endpoint response
 curl http://localhost:8080
 
