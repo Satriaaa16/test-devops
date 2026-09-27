@@ -66,21 +66,26 @@ This guarantees that the service rolls back to the last known healthy state befo
 Verification & Execution
 To test the entire workflow locally:
 
-```Bash
+
 # 1. Run unit tests
+```bash
 go test -v .
+```
 
 # 2. Compile static binary with custom version tag
+```bash
 CGO_ENABLED=0 GOOS=linux go build -ldflags="-X 'main.version=1.0.0'" -o ./bin/app main.go
+```
 
 # 3. Build & Run container
+```bash
 docker build --build-arg VERSION=1.0.0 -t devops-go-app:latest .
 docker run -d --name devops-go-app --restart always -p 8080:8080 -v $(pwd)/bin/app:/app/app devops-go-app:latest
-
 ```
 # 4. Verify endpoint response
+```bash
 curl http://localhost:8080
-
+```
 <img width="1915" height="987" alt="image" src="https://github.com/user-attachments/assets/02b520e4-b3f3-481b-be89-d988ddffda12" />
 
 
